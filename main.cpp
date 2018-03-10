@@ -4,26 +4,35 @@
 #include "FastNoise.h"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Sprite.hpp>
-#include <iostream>
+#include <SFML/Graphics/Shader.hpp>
 #include <cmath>
+#include <iostream>
 
 float generate(int x, int y);
 float circle(int x, int y);
 
 const float WIDTH = 600.0f;
 const float HEIGHT = 600.0f;
-
+const int MAX_SMOOTH = 300;
 FastNoise fnoise(0xdedbeef);
 
 int main() {
+
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Procedural Island", sf::Style::Titlebar);
     window.setFramerateLimit(60);
 
-    Island::Terrain terrain((int)WIDTH, (int) HEIGHT);
+    sf::Shader shdTerrain;
+    if(!shdTerrain.loadFromFile("shaders/default.vs", "shaders/island.fs"))
+    {
+        std::cerr << "Failed to load shaders" << std::endl;
+        return 0;
+    }
 
-    terrain.setValues(&generate);
-    for(int i = 0; i < 50; i++)
-        terrain.smooth();
+    Island::Terrain terrain((int)WIDTH, (int) HEIGHT);
+    float newSeaLevel = terrain.getSeaLevel();
+
+            terrain.setValues(&generate);
+    int timesSmoothed = 0;
 
     sf::Image imgTerrain;
     imgTerrain.create((int)WIDTH, (int)HEIGHT);
@@ -53,8 +62,33 @@ int main() {
                 window.close();
         }
 
+        if(timesSmoothed < MAX_SMOOTH)
+        {
+            terrain.smooth();
+            timesSmoothed += 1;
+
+            for(int x = 0; x < WIDTH; x++)
+            {
+                for(int y = 0; y < HEIGHT; y++)
+                {
+                    float value = terrain.getAt(x, y);
+                    const sf::Color color(value * 255.0f, value * 255.0f, value * 255.0f);
+                    imgTerrain.setPixel(x, y, color);
+                }
+            }
+
+            textureTerrain.loadFromImage(imgTerrain);
+            sprTerrain.setTexture(textureTerrain);
+        }else{
+            newSeaLevel += 0.00f / 60.0f;
+        }
+
         window.clear(sf::Color::White);
-        window.draw(sprTerrain);
+        shdTerrain.setUniform("sea_level", newSeaLevel);
+        shdTerrain.setUniform("beach_level", terrain.getBeachLevel());
+        shdTerrain.setUniform("grass_level", terrain.getGrassLevel());
+        shdTerrain.setUniform("mountain_level", terrain.getMountainLevel());
+        window.draw(sprTerrain, &shdTerrain);
         window.display();
     }
 

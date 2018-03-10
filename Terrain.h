@@ -9,11 +9,14 @@ namespace Island {
 
 class Terrain {
     const int width, height;
-    float seaLevel = 0.35f;
+    float seaLevel = 0.6f, beachLevel = 0.7f, grassLevel = 0.85f, mountainLevel = 0.95f;
     float** heightMap;
 public:
     Terrain(int width, int height);
     float getSeaLevel() const { return seaLevel; }
+    float getBeachLevel() const { return beachLevel; }
+    float getGrassLevel() const { return grassLevel; }
+    float getMountainLevel() const { return mountainLevel; }
     void smooth();
     void setValues(float (*func)(int, int));
     float getAt(int x, int y) const;
