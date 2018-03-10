@@ -30,6 +30,8 @@
 
 #include <math.h>
 #include <assert.h>
+#include <random>
+#include <algorithm>
 
 const FN_DECIMAL GRAD_X[] =
         {
