@@ -7,6 +7,7 @@
 #include <SFML/Graphics/Shader.hpp>
 #include <cmath>
 #include <iostream>
+#include <time.h>
 
 float generate(int x, int y);
 float circle(int x, int y);
@@ -17,6 +18,11 @@ const int MAX_SMOOTH = 300;
 FastNoise fnoise(0xdedbeef);
 
 int main() {
+
+    srand(time(0));
+    int seed = rand();
+    std::cout << "Seed: " << seed << std::endl;
+    fnoise.SetSeed(seed);
 
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Procedural Island", sf::Style::Titlebar);
     window.setFramerateLimit(60);
